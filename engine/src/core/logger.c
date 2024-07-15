@@ -24,6 +24,27 @@ void log_message(LogLevel level, const char* message, ...) {
         "[TRACE]: "
     };
 
+    const char* color;
+    switch (level) {
+        case LOG_LEVEL_FATAL:
+            color = MAGENTA;
+            break;
+        case LOG_LEVEL_ERROR:
+            color = RED;
+            break;
+        case LOG_LEVEL_WARN:
+            color = YELLOW;
+            break;
+        case LOG_LEVEL_INFO:
+            color = GREEN;
+            break;
+        case LOG_LEVEL_DEBUG:
+            color = BLUE;
+            break;
+        case LOG_LEVEL_TRACE:
+            color = WHITE;
+            break;
+    }
     // Buffer for message
     char buffer[4096];
     memset(buffer, 0, sizeof(buffer));
@@ -37,8 +58,10 @@ void log_message(LogLevel level, const char* message, ...) {
     // Combine level and message into ouput buffer
     char output[4096];
     memset(output, 0, sizeof(output));
-    strncpy(output, level_str[level], strlen(level_str[level]));
+    strncpy(output, color, strlen(color));
+    strncat(output, level_str[level], strlen(level_str[level]));
     strncat(output, buffer, strlen(buffer));
+    strncat(output, RESET, strlen(RESET));
     strncat(output, "\n", 1);
 
     // TODO: Platform specific logging, file output

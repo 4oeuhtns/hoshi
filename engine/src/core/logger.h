@@ -24,6 +24,15 @@ typedef enum LogLevel {
     LOG_LEVEL_TRACE = 5
 } LogLevel;
 
+// Ansi color codes
+#define MAGENTA "\e[35;1m"
+#define RED     "\e[31;2m"
+#define YELLOW  "\e[33m"
+#define GREEN   "\e[32m"
+#define BLUE    "\e[34m"
+#define WHITE   "\e[37m"
+#define RESET   "\e[0m"
+
 // ---------- Methods ----------
 b8 init_logger();
 void shutdown_logger();
