@@ -14,12 +14,12 @@ void shutdown_logger() {
     //TODO: cleanup logging/write queued entries
 }
 
-HS_API log_message(LogLevel level, const char* message, ...) {
+void log_message(LogLevel level, const char* message, ...) {
     const char* level_str[6] = {
         "[FATAL]: ",
         "[ERROR]: ",
-        "[WARN]: ",
-        "[INFO]: ",
+        "[WARN]:  ",
+        "[INFO]:  ",
         "[DEBUG]: ",
         "[TRACE]: "
     };
@@ -34,6 +34,13 @@ HS_API log_message(LogLevel level, const char* message, ...) {
     vsnprintf(buffer, sizeof(buffer), message, args); // Formats based on message and args
     va_end(args);
 
-    sprintf(buffer, "%s%s\n", level_str[level], buffer); // Prepends level to message
-    printf("%s", buffer);
+    // Combine level and message into ouput buffer
+    char output[4096];
+    memset(output, 0, sizeof(output));
+    strncpy(output, level_str[level], strlen(level_str[level]));
+    strncat(output, buffer, strlen(buffer));
+    strncat(output, "\n", 1);
+
+    // TODO: Platform specific logging, file output
+    printf("%s", output);
 }
