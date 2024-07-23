@@ -3,10 +3,11 @@
 // Windows platform implementation
 #if PLATFORM_WINDOWS
 
+#include "core/logger.h"
+
 #include <windows.h>
 #include <windowsx.h>
-
-#include "core/logger.h"
+#include <stdlib.h>
 
 // Internal state for windows platform
 typedef struct internal_state {
@@ -14,22 +15,12 @@ typedef struct internal_state {
     HWND window; // Window handle
 } internal_state;
 
-LRESULT CALLBACK win32_process_message(HWND window, u32 message, WPARAM w_param, LPARAM l_param); /* {
-    LRESULT result = 0;
-    switch (message) {
-        case WM_CLOSE: {
-            DestroyWindow(window);
-        } break;
-        case WM_DESTROY: {
-            PostQuitMessage(0);
-        } break;
-        default: {
-            result = DefWindowProc(window, message, w_param, l_param);
-        } break;
-    }
-    return result;
-}
-*/
+// Clock
+static f64 clock_frequency;
+static LARGE_INTEGER clock_start;
+
+
+LRESULT CALLBACK win32_process_message(HWND window, u32 message, WPARAM w_param, LPARAM l_param);
 
 b8 init_platform(
     platform_state* plat_state,
@@ -125,6 +116,12 @@ b8 init_platform(
     // initially maximized, SW_SHOWMAXIMIZED
     ShowWindow(state->window, show_cmd);
 
+    // Clock setup
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    clock_frequency = 1.0 / (f64)frequency.QuadPart;
+    QueryPerformanceCounter(&clock_start);
+
     return TRUE;
 }
 
@@ -138,7 +135,137 @@ void shutdown_platform(platform_state* plat_state) {
 }
 
 b8 platform_pump_messages(platform_state* plat_state) {
-    
+    MSG message;
+    while (PeekMessageA(&message, NULL, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&message);
+        DispatchMessageA(&message);
+    }
+
+    return TRUE;
+}
+
+void* platform_alloc(u64 size, b8 aligned) {
+    return malloc(size); //TODO: alinged memory allocation
+}
+
+void platform_free(void* block, b8 aligned) {
+    free(block); //TODO: alinged memory allocation
+}
+
+void* platform_zero_memory(void* block, u64 size) {
+    return memset(block, 0, size);
+}
+
+void* platform_copy_memory(void* dest, const void* source, u64 size) {
+    return memcpy(dest, source, size);
+}
+
+void* platform_set_memory(void* dest, i32 value, u64 size) {
+    return memset(dest, value, size);
+}
+
+void platform_console_write(const char* message, u8 color) {
+    // Console color
+    HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    static u8 color_levels[6] = {
+        FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, // fatal, magenta
+        FOREGROUND_INTENSITY | FOREGROUND_RED, // error, red
+        FOREGROUND_RED | FOREGROUND_GREEN, // warn, yellow
+        FOREGROUND_GREEN, // info, green
+        FOREGROUND_BLUE, // debug, blue
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE // trace, gray
+    };
+    SetConsoleTextAttribute(console_handle, color_levels[color]);
+
+    OutputDebugStringA(message);
+    u64 length = strlen(message);
+    LPDWORD written = 0;
+    WriteConsoleA(console_handle, message, (DWORD)length, written, 0);
+}
+
+void platform_console_write_error(const char* message, u8 color) {
+    // Console color
+    HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
+    static u8 color_levels[6] = {
+        FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, // fatal, magenta
+        FOREGROUND_INTENSITY | FOREGROUND_RED, // error, red
+        FOREGROUND_RED | FOREGROUND_GREEN, // warn, yellow
+        FOREGROUND_GREEN, // info, green
+        FOREGROUND_BLUE, // debug, blue
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE // trace, gray
+    };
+    SetConsoleTextAttribute(console_handle, color_levels[color]);
+
+    OutputDebugStringA(message);
+    u64 length = strlen(message);
+    LPDWORD written = 0;
+    WriteConsoleA(console_handle, message, (DWORD)length, written, 0);
+}
+
+// FIXME: platform time might be wrong, in video, did not subtract start time
+f64 platform_get_time() {
+    LARGE_INTEGER current_time;
+    QueryPerformanceCounter(&current_time);
+    return (f64)(current_time.QuadPart - clock_start.QuadPart) * clock_frequency;
+}
+
+void platform_sleep(u64 ms) {
+    Sleep(ms);
+}
+
+// Window message processing
+LRESULT CALLBACK win32_process_message(HWND window, u32 message, WPARAM w_param, LPARAM l_param) {
+    switch (message) {
+        case WM_ERASEBKGND:
+            return 1; // erase handled by application
+        case WM_CLOSE:
+            return 0; // TODO: fire event for application to quit
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+        case WM_SIZE: {
+            // Get updated window size
+            // RECT rect; 
+            // GetClientRect(window, &rect);
+            // u32 width = rect.right - rect.left;
+            // u32 height = rect.bottom - rect.top;
+
+            // TODO: fire event for application to resize
+        } break;
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        case WM_KEYUP:
+        case WM_SYSKEYUP: {
+            // Pressed or released
+            // b8 pressed = (message == WM_KEYDOWN || message == WM_SYSKEYDOWN);
+            // TODO: input processing
+
+        } break;
+        case WM_MOUSEMOVE: {
+            // Mouse move
+            // i32 x = GET_X_LPARAM(l_param);
+            // i32 y = GET_Y_LPARAM(l_param);
+            // TODO: input processing
+        } break;
+        case WM_MOUSEWHEEL: {
+            // i32 delta = GET_WHEEL_DELTA_WPARAM(w_param);
+            // if (delta != 0) {
+            //     delta = (delta > 0) ? 1 : -1;
+            // }
+            // TODO: input processing
+        } break;
+        case WM_LBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_MBUTTONUP:
+        case WM_RBUTTONUP: {
+            // b8 pressed = (message == WM_LBUTTONDOWN || message == WM_MBUTTONDOWN || message == WM_RBUTTONDOWN);
+            // TODO: input processing
+        } break;
+        default:
+            return DefWindowProcA(window, message, w_param, l_param);
+    }
 }
 
 #endif
