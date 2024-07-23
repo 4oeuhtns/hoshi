@@ -187,7 +187,7 @@ void platform_console_write_error(const char* message, u8 color) {
     // Console color
     HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
     static u8 color_levels[6] = {
-        FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, // fatal, magenta
+        BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_BLUE, // fatal, magenta
         FOREGROUND_INTENSITY | FOREGROUND_RED, // error, red
         FOREGROUND_RED | FOREGROUND_GREEN, // warn, yellow
         FOREGROUND_GREEN, // info, green
@@ -263,9 +263,8 @@ LRESULT CALLBACK win32_process_message(HWND window, u32 message, WPARAM w_param,
             // b8 pressed = (message == WM_LBUTTONDOWN || message == WM_MBUTTONDOWN || message == WM_RBUTTONDOWN);
             // TODO: input processing
         } break;
-        default:
-            return DefWindowProcA(window, message, w_param, l_param);
     }
+    return DefWindowProcA(window, message, w_param, l_param);
 }
 
 #endif

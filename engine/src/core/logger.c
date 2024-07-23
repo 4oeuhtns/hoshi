@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "platform/platform.h"
 
 //TODO: temp includes
 #include <stdio.h>
@@ -23,30 +24,11 @@ void log_message(LogLevel level, const char* message, ...) {
         "[DEBUG]: ",
         "[TRACE]: "
     };
+    b8 is_error = level < LOG_LEVEL_WARN;
+    const i32 msg_length = 4096;
 
-    const char* color;
-    switch (level) {
-        case LOG_LEVEL_FATAL:
-            color = MAGENTA;
-            break;
-        case LOG_LEVEL_ERROR:
-            color = RED;
-            break;
-        case LOG_LEVEL_WARN:
-            color = YELLOW;
-            break;
-        case LOG_LEVEL_INFO:
-            color = GREEN;
-            break;
-        case LOG_LEVEL_DEBUG:
-            color = BLUE;
-            break;
-        case LOG_LEVEL_TRACE:
-            color = WHITE;
-            break;
-    }
     // Buffer for message
-    char buffer[4096];
+    char buffer[msg_length];
     memset(buffer, 0, sizeof(buffer));
 
     // Format message
@@ -56,14 +38,16 @@ void log_message(LogLevel level, const char* message, ...) {
     va_end(args);
 
     // Combine level and message into ouput buffer
-    char output[4096];
+    char output[msg_length];
     memset(output, 0, sizeof(output));
-    strncpy(output, color, strlen(color));
-    strncat(output, level_str[level], strlen(level_str[level]));
+    strncpy(output, level_str[level], strlen(level_str[level]));
     strncat(output, buffer, strlen(buffer));
-    strncat(output, RESET, strlen(RESET));
     strncat(output, "\n", 1);
 
-    // TODO: Platform specific logging, file output
-    printf("%s", output);
+    // Write to console
+    if (is_error) {
+        platform_console_write_error(output, level);
+    } else {
+        platform_console_write(output, level);
+    }
 }
