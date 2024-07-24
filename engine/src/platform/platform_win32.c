@@ -16,7 +16,7 @@ typedef struct internal_state {
 } internal_state;
 
 // Clock
-static f64 clock_frequency;
+static f64 clock_period;
 static LARGE_INTEGER clock_start;
 
 
@@ -119,7 +119,7 @@ b8 init_platform(
     // Clock setup
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
-    clock_frequency = 1.0 / (f64)frequency.QuadPart;
+    clock_period = 1.0 / (f64)frequency.QuadPart;
     QueryPerformanceCounter(&clock_start);
 
     return TRUE;
@@ -206,7 +206,7 @@ void platform_console_write_error(const char* message, u8 color) {
 f64 platform_get_time() {
     LARGE_INTEGER current_time;
     QueryPerformanceCounter(&current_time);
-    return (f64)(current_time.QuadPart - clock_start.QuadPart) * clock_frequency;
+    return (f64)(current_time.QuadPart - clock_start.QuadPart) * clock_period;
 }
 
 void platform_sleep(u64 ms) {
@@ -263,6 +263,8 @@ LRESULT CALLBACK win32_process_message(HWND window, u32 message, WPARAM w_param,
             // b8 pressed = (message == WM_LBUTTONDOWN || message == WM_MBUTTONDOWN || message == WM_RBUTTONDOWN);
             // TODO: input processing
         } break;
+        default:
+            break;
     }
     return DefWindowProcA(window, message, w_param, l_param);
 }
