@@ -168,7 +168,7 @@ void platform_console_write(const char* message, u8 color) {
     // Console color
     HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
     static u8 color_levels[6] = {
-        FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, // fatal, magenta
+        BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, // fatal, magenta
         FOREGROUND_INTENSITY | FOREGROUND_RED, // error, red
         FOREGROUND_RED | FOREGROUND_GREEN, // warn, yellow
         FOREGROUND_GREEN, // info, green
@@ -206,7 +206,7 @@ void platform_console_write_error(const char* message, u8 color) {
 f64 platform_get_time() {
     LARGE_INTEGER current_time;
     QueryPerformanceCounter(&current_time);
-    return (f64)(current_time.QuadPart - clock_start.QuadPart) * clock_period;
+    return (f64)(current_time.QuadPart) * clock_period;
 }
 
 void platform_sleep(u64 ms) {
