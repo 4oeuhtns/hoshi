@@ -19,7 +19,7 @@ static b8 initialized = FALSE;
 // Static instance of the application state
 static application_state app_state;
 
-HS_API b8 init_application(game* game_instance) {
+b8 init_application(game* game_instance) {
     if (initialized) {
         HS_ERROR("Application already initialized!");
         return FALSE;
@@ -65,7 +65,7 @@ HS_API b8 init_application(game* game_instance) {
     return TRUE;
 }
 
-HS_API b8 run_application() {
+b8 run_application() {
     while(app_state.is_running) {
         if (!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
