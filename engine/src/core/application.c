@@ -24,6 +24,8 @@ b8 init_application(game* game_instance) {
         HS_ERROR("Application already initialized!");
         return FALSE;
     }
+
+    // Set instance from application
     app_state.game_instance = game_instance;
 
     // Initialize subsystems

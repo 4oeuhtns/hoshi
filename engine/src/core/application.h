@@ -7,11 +7,11 @@ struct game;
 
 // Application configuration
 typedef struct application_config {
+    const char* title;
     i16 start_x;
     i16 start_y;
     i16 width;
     i16 height;
-    const char* title;
 } application_config;
 
 // ---------- Methods ----------
