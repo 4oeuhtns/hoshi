@@ -10,5 +10,13 @@ int main() {
     HS_INFO("Hello, info!");
     HS_TRACE("Hello, trace!");
 
+    // platform_state state;
+
+    // if (init_platform(&state, "Test window", 0, 0, 800, 600)) {
+    //     while(TRUE) {
+    //         platform_pump_messages(&state);
+    //     }
+    // }
+    // shutdown_platform(&state);
     return 0;
 }
