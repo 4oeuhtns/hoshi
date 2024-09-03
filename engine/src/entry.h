@@ -2,6 +2,7 @@
 
 #include "core/application.h"
 #include "core/logger.h"
+#include "core/hs_memory.h"
 #include "game_types.h"
 
 // Externally defined function to create a game instance
@@ -10,6 +11,10 @@ extern b8 create_game(game* out_game);
 
 // Main function
 int main() {
+
+    // Initialize memory
+    init_memory();
+
     // Request game instance from application
     game game_instance;
     if (!create_game(&game_instance)) {
@@ -34,6 +39,9 @@ int main() {
         HS_INFO("Application failed to shutdown properly.");
         return 2;
     }
+
+    // Shutdown memory
+    shutdown_memory();
 
     return 0;
 }

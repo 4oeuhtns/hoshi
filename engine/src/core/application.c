@@ -4,6 +4,9 @@
 #include "logger.h"
 #include "platform/platform.h"
 
+
+#include "hs_memory.h"
+
 // Structure representing the state of the application
 typedef struct application_state {
     game* game_instance;
@@ -68,6 +71,10 @@ b8 init_application(game* game_instance) {
 }
 
 b8 run_application() {
+    // TODO: test memory usage
+    hs_alloc(1024, MEMORY_TAG_APPLICATION);
+    HS_INFO(get_memory_usage());
+
     while(app_state.is_running) {
         if (!platform_pump_messages(&app_state.platform)) {
             app_state.is_running = FALSE;
